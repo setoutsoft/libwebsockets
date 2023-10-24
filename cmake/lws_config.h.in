@@ -12,6 +12,8 @@
 #define LWS_LIBRARY_VERSION_MINOR ${LWS_LIBRARY_VERSION_MINOR}
 #define LWS_LIBRARY_VERSION_PATCH_ELABORATED ${LWS_LIBRARY_VERSION_PATCH_ELABORATED}
 #define LWS_LIBRARY_VERSION_PATCH ${LWS_LIBRARY_VERSION_PATCH}
+#define LWS_HAVE_HMAC_CTX_new
+#define LWS_HAVE_EVP_MD_CTX_free
 
 /* LWS_LIBRARY_VERSION_NUMBER looks like 1005001 for e.g. version 1.5.1 */
 #define LWS_LIBRARY_VERSION_NUMBER (LWS_LIBRARY_VERSION_MAJOR * 1000000) + \
@@ -39,7 +41,6 @@
 #cmakedefine LWS_HAVE_EC_POINT_get_affine_coordinates
 #cmakedefine LWS_HAVE_EC_KEY_new_by_curve_name
 #cmakedefine LWS_HAVE_ECDSA_SIG_set0
-#cmakedefine LWS_HAVE_EVP_MD_CTX_free
 #cmakedefine LWS_HAVE_EVP_aes_128_wrap
 #cmakedefine LWS_HAVE_EVP_aes_128_cfb8
 #cmakedefine LWS_HAVE_EVP_aes_128_cfb128
@@ -61,7 +62,6 @@
 #cmakedefine LWS_HAVE_GETPWUID_R
 #cmakedefine LWS_HAVE_GETPWNAM_R
 #cmakedefine LWS_HAVE_LIBCAP
-#cmakedefine LWS_HAVE_HMAC_CTX_new
 #cmakedefine LWS_HAVE_MALLOC_H
 #cmakedefine LWS_HAVE_MALLOC_TRIM
 #cmakedefine LWS_HAVE_MALLOC_USABLE_SIZE
