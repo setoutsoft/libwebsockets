@@ -87,9 +87,9 @@ _lws_plat_service_tsi(struct lws_context *context, int timeout_ms, int tsi)
 
 	if (timeout_ms < 0)
 		timeout_ms = 0;
-	else
+//	else
 		/* force a default timeout of 23 days */
-		timeout_ms = 2000000000;
+//		timeout_ms = 2000000000;
 	timeout_us = ((lws_usec_t)timeout_ms) * LWS_US_PER_MS;
 
 	if (context->event_loop_ops->run_pt)
