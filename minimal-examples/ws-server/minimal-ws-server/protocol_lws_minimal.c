@@ -123,7 +123,7 @@ callback_minimal(struct lws *wsi, enum lws_callback_reasons reason,
 			lwsl_user("OOM: dropping\n");
 			break;
 		}
-
+		lwsl_notice("recv buff len=%d\n", len);
 		memcpy((char *)vhd->amsg.payload + LWS_PRE, in, len);
 		vhd->current++;
 

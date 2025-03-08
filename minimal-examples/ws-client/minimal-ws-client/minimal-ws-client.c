@@ -26,9 +26,9 @@ static struct my_conn {
 } mco;
 
 static struct lws_context *context;
-static int interrupted, port = 443, ssl_connection = LCCSCF_USE_SSL;
-static const char *server_address = "libwebsockets.org",
-		  *pro = "dumb-increment-protocol";
+static int interrupted, port = 7681, ssl_connection = 0;
+static const char *server_address = "localhost",
+		  *pro = "lws-minimal";
 
 /*
  * The retry and backoff policy we want to use for our client connections
@@ -137,7 +137,7 @@ do_retry:
 }
 
 static const struct lws_protocols protocols[] = {
-	{ "lws-minimal-client", callback_minimal, 0, 0, 0, NULL, 0 },
+	{ "lws-minimal", callback_minimal, 0, 0, 0, NULL, 0 },
 	LWS_PROTOCOL_LIST_TERM
 };
 
@@ -207,7 +207,7 @@ int main(int argc, const char **argv)
 	lws_sul_schedule(context, 0, &mco.sul, connect_client, 1);
 
 	while (n >= 0 && !interrupted)
-		n = lws_service(context, 0);
+		n = lws_service(context, 50);
 
 	lws_context_destroy(context);
 	lwsl_user("Completed\n");

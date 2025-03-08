@@ -7,7 +7,7 @@ include(CheckCSourceCompiles)
 include(LwsCheckRequirements)
 
 set(SAMP lws-minimal-ws-client)
-set(SRCS minimal-ws-client.c)
+set(SRCS minimal-ws-client.cpp)
 
 set(requirements 1)
 require_lws_config(LWS_ROLE_WS 1 requirements)

@@ -21,8 +21,38 @@
 #define LWS_PLUGIN_STATIC
 #include "protocol_lws_minimal.c"
 
+static int echo_callback(struct lws* wsi, enum lws_callback_reasons reason, void* user, void* in, size_t len)
+{
+	switch (reason)
+	{
+	case LWS_CALLBACK_ESTABLISHED:
+		printf("Client connected\n");
+		break;
+
+	case LWS_CALLBACK_RECEIVE:
+		printf("Received from client: %.*s\n", (int)len, (char*)in);
+		lws_write(wsi, (unsigned char*)in, len, LWS_WRITE_TEXT);
+		break;
+
+	case LWS_CALLBACK_CLOSED:
+		printf("Client disconnected\n");
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 static struct lws_protocols protocols[] = {
 	{ "http", lws_callback_http_dummy, 0, 0, 0, NULL, 0},
+	{
+		"echo",
+		echo_callback,  
+		0,               
+		1024           
+	},
 	LWS_PLUGIN_PROTOCOL_MINIMAL,
 	LWS_PROTOCOL_LIST_TERM
 };
@@ -58,16 +88,18 @@ static const struct lws_http_mount mount = {
 /* if plugins enabled, only protocols explicitly named in pvo bind to vhost */
 static struct lws_protocol_vhost_options pvo = { NULL, NULL, "lws-minimal", "" };
 #endif
+struct lws_context* context;
 
 void sigint_handler(int sig)
 {
+	lwsl_user("sigint_handler\n");
 	interrupted = 1;
+	lws_cancel_service(context);
 }
 
 int main(int argc, const char **argv)
 {
 	struct lws_context_creation_info info;
-	struct lws_context *context;
 	const char *p;
 	int n = 0, logs = LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE
 			/* for LLL_ verbosity above NOTICE to be built into lws,
