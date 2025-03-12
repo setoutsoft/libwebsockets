@@ -1,4 +1,4 @@
-#
+﻿#
 # libwebsockets - small server side websockets and web server implementation
 #
 # Copyright (C) 2010 - 2020 Andy Green <andy@warmcat.com>
@@ -220,14 +220,14 @@ if (LWS_WITH_SSL)
 		if (LWS_WITH_CYASSL)
 			foreach(inc ${WOLFSSL_INCLUDE_DIRS})
 				set(OPENSSL_INCLUDE_DIRS ${OPENSSL_INCLUDE_DIRS} ${inc} ${inc}/cyassl)
-				set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} "${inc}" "${inc}/cyassl")
 				set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} PARENT_SCOPE)
+				include_directories("${OPENSSL_INCLUDE_DIRS}")
 			endforeach()
 		else()
 			foreach(inc ${WOLFSSL_INCLUDE_DIRS})
 				set(OPENSSL_INCLUDE_DIRS ${OPENSSL_INCLUDE_DIRS} ${inc} ${inc}/wolfssl)
-				set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} "${inc}" "${inc}/wolfssl")
 				set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} PARENT_SCOPE)
+				include_directories("${OPENSSL_INCLUDE_DIRS}")
 			endforeach()
 		endif()
 		set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${OPENSSL_INCLUDE_DIRS})
@@ -245,8 +245,9 @@ if (LWS_WITH_SSL)
 		message("MBEDTLS libraries: ${MBEDTLS_LIBRARIES}")
 
 		foreach(inc ${MBEDTLS_INCLUDE_DIRS})
-				set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} "${inc}" "${inc}/mbedtls")
+				set(OPENSSL_INCLUDE_DIRS ${OPENSSL_INCLUDE_DIRS} "${inc}" "${inc}/mbedtls")
 				set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} PARENT_SCOPE)
+				include_directories("${OPENSSL_INCLUDE_DIRS}")
 		endforeach()
 
 		list(INSERT LIB_LIST 0 "${MBEDTLS_LIBRARIES}")
@@ -279,7 +280,7 @@ if (LWS_WITH_SSL)
 		endif()
 
 		if (OPENSSL_INCLUDE_DIRS)
-			set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} "${OPENSSL_INCLUDE_DIRS}")
+			include_directories(${OPENSSL_INCLUDE_DIRS})
 			set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} PARENT_SCOPE)
 		endif()
 		if (NOT LWS_PLAT_FREERTOS)

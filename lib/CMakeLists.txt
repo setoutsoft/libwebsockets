@@ -280,113 +280,16 @@ if (LWS_WITH_SHARED)
 	set(LIBWEBSOCKETS_LIBRARIES_SHARED websockets_shared CACHE STRING "Libwebsocket shared library")
 endif()
 
-# Install libs and headers.
 install(TARGETS ${LWS_LIBRARIES}
-		EXPORT LibwebsocketsTargets
-		LIBRARY DESTINATION "${LWS_INSTALL_LIB_DIR}${LIB_SUFFIX}" COMPONENT core
-		ARCHIVE DESTINATION "${LWS_INSTALL_LIB_DIR}${LIB_SUFFIX}" COMPONENT core
-		RUNTIME DESTINATION "${LWS_INSTALL_BIN_DIR}" COMPONENT core # Windows DLLs
-		PUBLIC_HEADER DESTINATION "${LWS_INSTALL_INCLUDE_DIR}" COMPONENT dev)
-		
-	#set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Libraries" PARENT_SCOPE)
-set(CPACK_COMPONENT_DEV_DISPLAY_NAME "Development files" PARENT_SCOPE)
-
-
-if (UNIX OR MINGW)
-
-# figure out pkfcfg required libs here
-
-set(lws_requires "")
-if (LWS_HAVE_LIBCAP)
-	if (NOT lws_requires STREQUAL "")
-		set(lws_requires "${lws_requires},libcap")
-	else()
-		set(lws_requires "libcap")
-	endif()
-endif()
-
-
-# Generate and install pkgconfig.
-# (This is not indented, because the tabs will be part of the output)
-file(WRITE "${PROJECT_BINARY_DIR}/libwebsockets.pc"
-"prefix=\"${CMAKE_INSTALL_PREFIX}\"
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib${LIB_SUFFIX}
-includedir=\${prefix}/include
-
-Name: libwebsockets
-Description: Websockets server and client library
-Version: ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}
-
-Libs: -L\${libdir} -lwebsockets
-Cflags: -I\${includedir}
-"
-)
-if (NOT ${lws_requires} STREQUAL "")
-        file(APPEND "${PROJECT_BINARY_DIR}/libwebsockets.pc" "Requires: ${lws_requires}")
-endif()
-
-
-	install(FILES "${PROJECT_BINARY_DIR}/libwebsockets.pc"
-		DESTINATION lib${LIB_SUFFIX}/pkgconfig)
-
-file(WRITE "${PROJECT_BINARY_DIR}/libwebsockets_static.pc"
-"prefix=\"${CMAKE_INSTALL_PREFIX}\"
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib${LIB_SUFFIX}
-includedir=\${prefix}/include
-
-Name: libwebsockets_static
-Description: Websockets server and client static library
-Version: ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}
-
-Libs: -L\${libdir} -l:libwebsockets${CMAKE_STATIC_LIBRARY_SUFFIX}
-Libs.private:
-Cflags: -I\${includedir}
-"
+    CONFIGURATIONS Release
+    RUNTIME DESTINATION bin/Release
+    LIBRARY DESTINATION lib/Release
+    ARCHIVE DESTINATION lib/Release
 )
 
-if (NOT ${lws_requires} STREQUAL "")
-        file(APPEND "${PROJECT_BINARY_DIR}/libwebsockets_static.pc" "Requires: ${lws_requires}")
-endif()
-
-
-	install(FILES "${PROJECT_BINARY_DIR}/libwebsockets_static.pc"
-		DESTINATION lib${LIB_SUFFIX}/pkgconfig)
-
-endif(UNIX OR MINGW)
-
-
-# Keep explicit parent scope exports at end
-#
-
-export_to_parent_intermediate()
-if (DEFINED LWS_PLAT_UNIX)
-	set(LWS_PLAT_UNIX ${LWS_PLAT_UNIX} PARENT_SCOPE)
-	if (ILLUMOS)
-		add_definitions("-D__illumos__")
-	endif()
-endif()
-set(LWS_HAVE_MBEDTLS_NET_SOCKETS ${LWS_HAVE_MBEDTLS_NET_SOCKETS} PARENT_SCOPE)
-set(LWS_HAVE_MBEDTLS_SSL_NEW_SESSION_TICKET ${LWS_HAVE_MBEDTLS_SSL_NEW_SESSION_TICKET} PARENT_SCOPE)
-set(LWS_HAVE_mbedtls_ssl_conf_alpn_protocols ${LWS_HAVE_mbedtls_ssl_conf_alpn_protocols} PARENT_SCOPE)
-set(TEST_SERVER_SSL_KEY "${TEST_SERVER_SSL_KEY}" PARENT_SCOPE)
-set(TEST_SERVER_SSL_CERT "${TEST_SERVER_SSL_CERT}" PARENT_SCOPE)
-set(TEST_SERVER_DATA ${TEST_SERVER_DATA} PARENT_SCOPE)
-set(LWS_HAVE_PIPE2 ${LWS_HAVE_PIPE2} PARENT_SCOPE)
-set(LWS_LIBRARIES ${LWS_LIBRARIES} PARENT_SCOPE)
-if (DEFINED WIN32_HELPERS_PATH)
-	set(WIN32_HELPERS_PATH ${WIN32_HELPERS_PATH} PARENT_SCOPE)
-endif()
-if (DEFINED HDR_PRIVATE)
-set(HDR_PRIVATE ${HDR_PRIVATE} PARENT_SCOPE)
-endif()
-if (DEFINED ZLIB_FOUND)
-	set(ZLIB_FOUND ${ZLIB_FOUND} PARENT_SCOPE)
-endif()
-if (DEFINED LIB_LIST_AT_END)
-set(LIB_LIST_AT_END ${LIB_LIST_AT_END} PARENT_SCOPE)
-endif()
-set(USE_WOLFSSL ${USE_WOLFSSL} PARENT_SCOPE)
-set(LWS_DEPS_LIB_PATHS ${LWS_DEPS_LIB_PATHS} PARENT_SCOPE)
-
+install(TARGETS ${LWS_LIBRARIES}
+    CONFIGURATIONS Debug
+    RUNTIME DESTINATION bin/Debug
+    LIBRARY DESTINATION lib/Debug
+    ARCHIVE DESTINATION lib/Debug
+)

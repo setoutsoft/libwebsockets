@@ -22,7 +22,7 @@
 # IN THE SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.15)
 include(CheckFunctionExists)
 include(CheckSymbolExists)
 include(CheckIncludeFile)
@@ -39,7 +39,14 @@ endif()
 #	cmake_policy(SET CMP0024 NEW)
 #endif()
 
+
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+if(MSVC)
 add_compile_options(/utf-8)
+else()
+add_compile_options(-Wno-old-style-definition)
+endif()
+endif()
 
 if (POLICY CMP0075)
 	cmake_policy(SET CMP0075 NEW)
@@ -220,7 +227,7 @@ option(LWS_WITH_DRIVERS "With generic drivers for gpio, i2c, display etc" OFF)
 option(LWS_WITH_STATIC "Build the static version of the library" ON)
 option(LWS_WITH_SHARED "Build the shared version of the library" ON)
 option(LWS_LINK_TESTAPPS_DYNAMIC "Link the test apps to the shared version of the library. Default is to link statically" OFF)
-option(LWS_STATIC_PIC "Build the static version of the library with position-independent code" OFF)
+option(LWS_STATIC_PIC "Build the static version of the library with position-independent code" ON)
 option(LWS_SUPPRESS_DEPRECATED_API_WARNINGS "Turn off complaints about, eg, openssl 3 deprecated api usage" ON)
 
 #
@@ -794,7 +801,7 @@ if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR COMPILER_IS_CLANG)
 	endif()
 
 	if (CMAKE_COMPILER_IS_CLANG OR CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.4)
-		set(CMAKE_C_FLAGS "-Wuninitialized ${CMAKE_C_FLAGS}")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wuninitialized ${CMAKE_C_FLAGS}")
 	endif()
 
 	# always warn all and generate debug info
@@ -852,7 +859,7 @@ if (MSVC)
 	# Turn off pointless microsoft security warnings.
 	add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
 	# Fail the build if any warnings
-	add_compile_options(/W3 /WX)
+	add_compile_options(/W3)
 	# Unbreak MSVC broken preprocessor __VA_ARGS__ behaviour
 	if (MSVC_VERSION GREATER 1925)
 		add_compile_options(/Zc:preprocessor /wd5105)
@@ -962,60 +969,6 @@ include_directories("${PROJECT_SOURCE_DIR}/lib")
 add_subdirectory(lib)
 
 
-if(WIN32 AND NOT CYGWIN)
-  set(DEF_INSTALL_CMAKE_DIR cmake)
-else()
-  set(DEF_INSTALL_CMAKE_DIR lib${LIB_SUFFIX}/cmake/libwebsockets)
-endif()
-                
-configure_file(${PROJECT_SOURCE_DIR}/cmake/LwsCheckRequirements.cmake
-		${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/LwsCheckRequirements.cmake
-		@ONLY)
-		
-configure_file(${PROJECT_SOURCE_DIR}/cmake/LwsCheckRequirements.cmake
-		${PROJECT_BINARY_DIR}/LwsCheckRequirements.cmake
-		@ONLY)  
-
-# Generate version info for both build-tree and install-tree.
-configure_file(${PROJECT_SOURCE_DIR}/cmake/libwebsockets-config-version.cmake.in
-                ${PROJECT_BINARY_DIR}/libwebsockets-config-version.cmake 
-                @ONLY)
-
-# Generate the config file for the build-tree.
-set(LWS__INCLUDE_DIRS 
-    "${PROJECT_SOURCE_DIR}/lib"
-    "${PROJECT_BINARY_DIR}")
-set(LIBWEBSOCKETS_INCLUDE_DIRS ${LWS__INCLUDE_DIRS} CACHE PATH "Libwebsockets include directories")
-configure_file(${PROJECT_SOURCE_DIR}/cmake/libwebsockets-config.cmake.in
-                ${PROJECT_BINARY_DIR}/libwebsockets-config.cmake 
-                @ONLY)
-set(LWS_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
-
-# Export targets (This is used for other CMake projects to easily find the libraries and include files).
-if (LWS_WITH_EXPORT_LWSTARGETS)
-    export(TARGETS ${LWS_LIBRARIES}
-            FILE "${PROJECT_BINARY_DIR}/LibwebsocketsTargets.cmake")
-endif()
-
-
-
-set(libwebsockets_DIR ${PROJECT_BINARY_DIR})
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-message("DIR ${libwebsockets_DIR} CMP ${CMAKE_MODULE_PATH}")
-
-if (LWS_WITH_MINIMAL_EXAMPLES)
-	add_subdirectory(minimal-examples)
-endif()
-
-if (NOT LWS_WITHOUT_TESTAPPS)
-	add_subdirectory(test-apps)
-endif()
-
-if (NOT LWS_WITH_PLUGINS_BUILTIN)
-add_subdirectory(plugins)
-endif()
-add_subdirectory(lwsws)
-
 # Generate the lws_config.h that includes all the public compilation settings.
 configure_file(
        "${PROJECT_SOURCE_DIR}/cmake/lws_config.h.in"
@@ -1050,63 +1003,3 @@ endif()
 if (LWS_WITH_SHARED)
 	add_dependencies(websockets_shared GENHDR)
 endif()
-
-
-
-#
-#
-# Installation preparations.
-#
-
-export(PACKAGE libwebsockets)
-
-install(DIRECTORY include/libwebsockets
-	DESTINATION "${LWS_INSTALL_INCLUDE_DIR}" COMPONENT dev)
-install(FILES ${PROJECT_BINARY_DIR}/include/libwebsockets.h ${PROJECT_BINARY_DIR}/include/lws_config.h
-	DESTINATION "${LWS_INSTALL_INCLUDE_DIR}" COMPONENT dev)
-
-# Generate the config file for the installation tree.
-get_filename_component(LWS_ABSOLUTE_INSTALL_CMAKE_DIR ${LWS_INSTALL_CMAKE_DIR} ABSOLUTE)
-get_filename_component(LWS_ABSOLUTE_INSTALL_INCLUDE_DIR ${LWS_INSTALL_INCLUDE_DIR} ABSOLUTE)
-file(RELATIVE_PATH 
-    REL_INCLUDE_DIR 
-    "${LWS_ABSOLUTE_INSTALL_CMAKE_DIR}"
-    "${LWS_ABSOLUTE_INSTALL_INCLUDE_DIR}") # Calculate the relative directory from the cmake dir.
-
-if (DEFINED REL_INCLUDE_DIR)
-    set(LWS__INCLUDE_DIRS "\${LWS_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-endif()
-if (DEFINED OPENSSL_INCLUDE_DIRS)
-	set(LWS__INCLUDE_DIRS "${LWS__INCLUDE_DIRS};${OPENSSL_INCLUDE_DIRS}")
-endif()
-
-configure_file(${PROJECT_SOURCE_DIR}/cmake/libwebsockets-config.cmake.in
-                ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/libwebsockets-config.cmake
-                @ONLY)
-
-set_target_properties(${LWS_LIBRARIES}
-		PROPERTIES PUBLIC_HEADER "${HDR_PUBLIC}")
-
-# Install the LibwebsocketsConfig.cmake and LibwebsocketsConfigVersion.cmake
-install(FILES
-               "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/libwebsockets-config.cmake"
-               "${PROJECT_BINARY_DIR}/libwebsockets-config-version.cmake"
-               "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/LwsCheckRequirements.cmake"
-               DESTINATION "${LWS_INSTALL_CMAKE_DIR}" COMPONENT dev)
-
-# Install exports for the install-tree.
-if (LWS_WITH_EXPORT_LWSTARGETS)
-    install(EXPORT LibwebsocketsTargets
-            DESTINATION "${LWS_INSTALL_CMAKE_DIR}" COMPONENT dev)
-endif()
-
-# build subdir is not part of sources
-set(CPACK_SOURCE_IGNORE_FILES $(CPACK_SOURCE_IGNORE_FILES) "/.git/" "/build/" "\\\\.tgz$" "\\\\.tar\\\\.gz$")
-
-# Most people are more used to "make dist" compared to "make package_source"
-add_custom_target(dist COMMAND "${CMAKE_MAKE_PROGRAM}" package_source)
-
-
-
-# This must always be last!
-include(CPack)
