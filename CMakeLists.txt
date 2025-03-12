@@ -39,7 +39,9 @@ endif()
 #	cmake_policy(SET CMP0024 NEW)
 #endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 add_compile_options(/utf-8)
+endif()
 
 if (POLICY CMP0075)
 	cmake_policy(SET CMP0075 NEW)
