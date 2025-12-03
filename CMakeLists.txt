@@ -966,6 +966,13 @@ list(APPEND LIB_LIST ${LIB_LIST_AT_END})
 
 include_directories("${PROJECT_SOURCE_DIR}/lib")
 
+# Set platform variables based on detection
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    set(LWS_PLAT_WINDOWS 1)
+else()
+    set(LWS_PLAT_UNIX 1)
+endif()
+
 add_subdirectory(lib)
 
 

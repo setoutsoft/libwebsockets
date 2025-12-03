@@ -40,7 +40,6 @@ if (NOT ${ILLUMOS} MATCHES "0")
 	set(ILLUMOS 1)
 endif()
 
-set(LWS_PLAT_UNIX 1)
 list(APPEND SOURCES
 	plat/unix/unix-caps.c
 	plat/unix/unix-misc.c
@@ -103,7 +102,7 @@ list(APPEND LIB_LIST_AT_END ${CMAKE_DL_LIBS})
 #
 
 exports_to_parent_scope()
-set(LWS_PLAT_UNIX ${LWS_PLAT_UNIX} PARENT_SCOPE)
+
 set(ILLUMOS ${ILLUMOS} PARENT_SCOPE)
 set(LIB_LIST_AT_END ${LIB_LIST_AT_END} PARENT_SCOPE)
-set(LWS_PLAT_UNIX ${LWS_PLAT_UNIX} PARENT_SCOPE)
+
