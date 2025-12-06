@@ -172,7 +172,7 @@ if (LWS_WITH_STATIC)
 	target_include_directories(websockets INTERFACE
 		$<INSTALL_INTERFACE:${LWS_INSTALL_INCLUDE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../include>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 	)
 	target_include_directories(websockets PRIVATE ${LWS_LIB_BUILD_INC_PATHS})
 	target_compile_definitions(websockets PRIVATE LWS_BUILDING_STATIC)
@@ -189,107 +189,7 @@ if (LWS_WITH_STATIC)
 	
 endif()
 
-if (LWS_WITH_SHARED)
-	if (NOT RESOURCES)
-		set(RESOURCES "")
-	endif()
-	
-	add_library(websockets_shared SHARED ${SOURCES} ${RESOURCES})# ${HDR_PUBLIC})
-	set_target_properties(websockets_shared PROPERTIES LINKER_LANGUAGE C)
-	list(APPEND LWS_LIBRARIES websockets_shared)
-	target_include_directories(websockets_shared INTERFACE
-		$<INSTALL_INTERFACE:${LWS_INSTALL_INCLUDE_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../include>
-	)
-	target_include_directories(websockets_shared PRIVATE ${LWS_LIB_BUILD_INC_PATHS})
-	target_compile_definitions(websockets_shared PRIVATE LWS_BUILDING_SHARED)
-	target_include_directories(websockets_shared PUBLIC ${LWS_PUBLIC_INCLUDES})
-	set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} PARENT_SCOPE)
-
-	# We want the shared lib to be named "libwebsockets"
-	# not "libwebsocket_shared".
-	set_target_properties(websockets_shared
-		PROPERTIES
-		OUTPUT_NAME websockets)
-
-	if (WIN32)
-		# Compile as DLL (export function declarations)
-		set_property(
-			TARGET websockets_shared
-			PROPERTY COMPILE_DEFINITIONS
-			LWS_DLL
-			LWS_INTERNAL)
-	endif()
-
-	if (APPLE)
-		set_property(TARGET websockets_shared PROPERTY MACOSX_RPATH YES)
-	endif()
-
-	if (UNIX AND LWS_WITH_PLUGINS_API)
-		set (CMAKE_POSITION_INDEPENDENT_CODE ON)
-		if (NOT((${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD") OR
-		   (${CMAKE_SYSTEM_NAME} MATCHES "OpenBSD") OR
-		   (${CMAKE_SYSTEM_NAME} MATCHES "QNX")))
-		   if (LWS_WITH_SHARED)
-				target_link_libraries(websockets_shared dl)
-			endif()
-		endif()
-	endif()
-
-endif()
-
-#
-# expose the library private include dirs to plugins, test apps etc that are
-# part of the lib build but different targets 
-#
-
-if (LWS_WITH_SHARED)
-	get_target_property(LWS_LIB_INCLUDES websockets_shared INCLUDE_DIRECTORIES)
-else()
-	get_target_property(LWS_LIB_INCLUDES websockets INCLUDE_DIRECTORIES)
-endif()
-
-
-# Set the so version of the lib.
-# Equivalent to LDFLAGS=-version-info x:x:x
-
-if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR COMPILER_IS_CLANG)
-	foreach(lib ${LWS_LIBRARIES})
-		set_target_properties(${lib}
-			PROPERTIES
-			SOVERSION ${SOVERSION})
-	endforeach()
-endif()
-
-
 # Setup the linking for all libs.
 foreach (lib ${LWS_LIBRARIES})
 	target_link_libraries(${lib} ${LIB_LIST})
 endforeach()
-
-#
-# These will be available to parent projects including libwebsockets
-# using add_subdirectory()
-#
-set(LIBWEBSOCKETS_LIBRARIES ${LWS_LIBRARIES} CACHE STRING "Libwebsocket libraries")
-if (LWS_WITH_STATIC)
-	set(LIBWEBSOCKETS_LIBRARIES_STATIC websockets CACHE STRING "Libwebsocket static library")
-endif()
-if (LWS_WITH_SHARED)
-	set(LIBWEBSOCKETS_LIBRARIES_SHARED websockets_shared CACHE STRING "Libwebsocket shared library")
-endif()
-
-install(TARGETS ${LWS_LIBRARIES}
-    CONFIGURATIONS Release
-    RUNTIME DESTINATION bin/Release
-    LIBRARY DESTINATION lib/Release
-    ARCHIVE DESTINATION lib/Release
-)
-
-install(TARGETS ${LWS_LIBRARIES}
-    CONFIGURATIONS Debug
-    RUNTIME DESTINATION bin/Debug
-    LIBRARY DESTINATION lib/Debug
-    ARCHIVE DESTINATION lib/Debug
-)

@@ -973,40 +973,9 @@ else()
     set(LWS_PLAT_UNIX 1)
 endif()
 
-add_subdirectory(lib)
-
-
 # Generate the lws_config.h that includes all the public compilation settings.
 configure_file(
        "${PROJECT_SOURCE_DIR}/cmake/lws_config.h.in"
        "${PROJECT_BINARY_DIR}/lws_config.h")
-       
-add_custom_command(
-		OUTPUT ${PROJECT_BINARY_DIR}/include/lws_config.h
-			${PROJECT_BINARY_DIR}/include/libwebsockets
-			${PROJECT_BINARY_DIR}/include/libwebsockets.h
-		COMMENT "Creating build include dir"
-		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/libwebsockets.h
-     			${CMAKE_CURRENT_BINARY_DIR}/include/libwebsockets.h
-		COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/include/libwebsockets/
-			${CMAKE_CURRENT_BINARY_DIR}/include/libwebsockets
-		COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/lws_config.h
-     			${CMAKE_CURRENT_BINARY_DIR}/include/lws_config.h
-		MAIN_DEPENDENCY ${PROJECT_BINARY_DIR}/lws_config.h
-)
 
-add_custom_target(GENHDR DEPENDS  ${PROJECT_BINARY_DIR}/include/lws_config.h)
-
-file(GLOB HDR_PUBLIC1 RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} include/libwebsockets/*.h)
-file(GLOB HDR_PUBLIC2 RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} include/libwebsockets.h)
-file(GLOB HDR_PUBLIC3 RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/include/lws_config.h)
-list(APPEND HDR_PUBLIC ${HDR_PUBLIC1} ${HDR_PUBLIC2} ${HDR_PUBLIC3})
-
-set_source_files_properties(${HDR_PUBLIC} PROPERTIES GENERATED 1)
-
-if (LWS_WITH_STATIC)
-	add_dependencies(websockets GENHDR)
-endif()
-if (LWS_WITH_SHARED)
-	add_dependencies(websockets_shared GENHDR)
-endif()
+add_subdirectory(lib)
