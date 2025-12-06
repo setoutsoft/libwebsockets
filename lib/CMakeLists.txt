@@ -187,9 +187,13 @@ if (LWS_WITH_STATIC)
 			OUTPUT_NAME websockets_static)
 	endif()
 	
+	set_target_properties (websockets PROPERTIES
+		FOLDER third-part
+	)
 endif()
 
 # Setup the linking for all libs.
 foreach (lib ${LWS_LIBRARIES})
 	target_link_libraries(${lib} ${LIB_LIST})
 endforeach()
+

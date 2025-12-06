@@ -76,7 +76,7 @@ project(libwebsockets C)
 if (LWS_WITH_SECURE_STREAMS_CPP)
 	enable_language(CXX)
 endif()
-include(CTest)
+
 
 if (ESP_PLATFORM)
        include_directories(
@@ -182,7 +182,7 @@ option(LWS_WITH_SS_DIRECT_PROTOCOL_STR "Secure Streams directly set/get metadata
 # have internet routing, then you can still run a subset of tests with CTest / make
 # test that only does local tests by disabling this option.
 #
-option(LWS_CTEST_INTERNET_AVAILABLE "CTest will performs tests that need the Internet" ON)
+option(LWS_CTEST_INTERNET_AVAILABLE "CTest will performs tests that need the Internet" OFF)
 
 #
 # TLS library options... all except mbedTLS are basically OpenSSL variants.
@@ -225,7 +225,7 @@ option(LWS_WITH_DRIVERS "With generic drivers for gpio, i2c, display etc" OFF)
 # Static / Dynamic build options
 #
 option(LWS_WITH_STATIC "Build the static version of the library" ON)
-option(LWS_WITH_SHARED "Build the shared version of the library" ON)
+option(LWS_WITH_SHARED "Build the shared version of the library" OFF)
 option(LWS_LINK_TESTAPPS_DYNAMIC "Link the test apps to the shared version of the library. Default is to link statically" OFF)
 option(LWS_STATIC_PIC "Build the static version of the library with position-independent code" ON)
 option(LWS_SUPPRESS_DEPRECATED_API_WARNINGS "Turn off complaints about, eg, openssl 3 deprecated api usage" ON)
@@ -243,11 +243,11 @@ option(LWS_PLAT_ANDROID "Android flavour of unix platform" OFF)
 #
 option(LWS_WITHOUT_CLIENT "Don't build the client part of the library" OFF)
 option(LWS_WITHOUT_SERVER "Don't build the server part of the library" OFF)
-option(LWS_WITHOUT_TESTAPPS "Don't build the libwebsocket-test-apps" OFF)
-option(LWS_WITHOUT_TEST_SERVER "Don't build the test server" OFF)
-option(LWS_WITHOUT_TEST_SERVER_EXTPOLL "Don't build the test server version that uses external poll" OFF)
-option(LWS_WITHOUT_TEST_PING "Don't build the ping test application" OFF)
-option(LWS_WITHOUT_TEST_CLIENT "Don't build the client test application" OFF)
+option(LWS_WITHOUT_TESTAPPS "Don't build the libwebsocket-test-apps" ON)
+option(LWS_WITHOUT_TEST_SERVER "Don't build the test server" ON)
+option(LWS_WITHOUT_TEST_SERVER_EXTPOLL "Don't build the test server version that uses external poll" ON)
+option(LWS_WITHOUT_TEST_PING "Don't build the ping test application" ON)
+option(LWS_WITHOUT_TEST_CLIENT "Don't build the client test application" ON)
 #
 # Extensions (permessage-deflate)
 #
@@ -375,41 +375,6 @@ macro(export_to_parent_intermediate)
 	endif()
 endmacro()
 
-#
-# Try to find the current Git hash
-#
-
-find_package(Git)
-if(GIT_EXECUTABLE)
-	execute_process(
-		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-		COMMAND "${GIT_EXECUTABLE}" describe --tags --always
-		OUTPUT_VARIABLE GIT_HASH
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
-	set(LWS_BUILD_HASH ${GIT_HASH})
-
-	# append the build user and hostname
-	if (NOT LWS_REPRODUCIBLE)
-		execute_process(
-			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-			COMMAND "whoami"
-			OUTPUT_VARIABLE GIT_USER
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-			)
-		execute_process(
-			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-			COMMAND "hostname"
-			OUTPUT_VARIABLE GIT_HOST
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-			)
-		string(REGEX REPLACE "([^\\])[\\]([^\\])" "\\1\\\\\\\\\\2" GIT_USER ${GIT_USER})
-		set(LWS_BUILD_HASH ${GIT_USER}@${GIT_HOST}-${GIT_HASH})
-	endif()
-
-	message("Git commit hash: ${LWS_BUILD_HASH}")
-endif()
-
 if ("${LWS_BUILD_HASH}" STREQUAL "")
 	set(LWS_BUILD_HASH "unknown")
 endif()
@@ -483,12 +448,6 @@ endif()
 
 include_directories(include)
 
-# Allow the user to override installation directories.
-set(LWS_INSTALL_LIB_DIR       lib CACHE PATH "Installation directory for libraries")
-set(LWS_INSTALL_BIN_DIR       bin CACHE PATH "Installation directory for executables")
-set(LWS_INSTALL_INCLUDE_DIR   include CACHE PATH "Installation directory for header files")
-set(LWS_INSTALL_EXAMPLES_DIR  bin CACHE PATH "Installation directory for example files")
-
 # if you gave LWS_WITH_MINIZ, point to MINIZ here if not found
 # automatically
 
@@ -547,12 +506,6 @@ if (NOT LWS_HAVE_inline)
 		set(inline __inline)
 	endif()
 endif()
-
-# Put the libraries and binaries that get built into directories at the
-# top of the build tree rather than in hard-to-find leaf directories. 
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 
 SET(LWS_INSTALL_PATH "${CMAKE_INSTALL_PREFIX}")
 
