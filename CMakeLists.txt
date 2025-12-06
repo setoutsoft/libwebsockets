@@ -926,6 +926,14 @@ else()
     set(LWS_PLAT_UNIX 1)
 endif()
 
+# The base dir where the test-apps look for the SSL certs.
+set(LWS_OPENSSL_CLIENT_CERTS ../share CACHE PATH "Server SSL certificate directory")
+if (WIN32)
+	set(LWS_OPENSSL_CLIENT_CERTS . CACHE PATH "Client SSL certificate directory")
+else()
+	set(LWS_OPENSSL_CLIENT_CERTS /etc/pki/tls/certs/ CACHE PATH "Client SSL certificate directory")
+endif()
+
 # Generate the lws_config.h that includes all the public compilation settings.
 configure_file(
        "${PROJECT_SOURCE_DIR}/cmake/lws_config.h.in"

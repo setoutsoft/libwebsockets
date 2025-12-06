@@ -101,13 +101,6 @@ if (LWS_WITH_MBEDTLS)
 	include_directories(${_CMAKE_INC_LIST})
 endif()
 
-# The base dir where the test-apps look for the SSL certs.
-set(LWS_OPENSSL_CLIENT_CERTS ../share CACHE PATH "Server SSL certificate directory")
-if (WIN32)
-	set(LWS_OPENSSL_CLIENT_CERTS . CACHE PATH "Client SSL certificate directory" PARENT_SCOPE)
-else()
-	set(LWS_OPENSSL_CLIENT_CERTS /etc/pki/tls/certs/ CACHE PATH "Client SSL certificate directory")
-endif()
 
 if (LWS_WITH_SSL)
 	list(APPEND SOURCES
