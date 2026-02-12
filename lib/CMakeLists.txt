@@ -161,24 +161,37 @@ endif()
 
 add_subdir_include_dirs(event-libs)
 
-    if (LWS_STATIC_PIC)
-        set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-    endif()
+if (LWS_STATIC_PIC)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
+add_library(websockets STATIC ${SOURCES})# ${HDR_PUBLIC})
+set_target_properties(websockets PROPERTIES LINKER_LANGUAGE C)
+list(APPEND LWS_LIBRARIES websockets)
+target_include_directories(websockets INTERFACE
+	$<INSTALL_INTERFACE:${LWS_INSTALL_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+)
+target_include_directories(websockets PRIVATE ${LWS_LIB_BUILD_INC_PATHS})
+target_compile_definitions(websockets PRIVATE LWS_BUILDING_STATIC)
+target_include_directories(websockets PUBLIC ${LWS_PUBLIC_INCLUDES})
+set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} PARENT_SCOPE)
+target_link_libraries(websockets PUBLIC ${LIB_LIST})
+set_target_properties (websockets PROPERTIES
+	FOLDER third-part
+)
 
-	add_library(websockets STATIC ${SOURCES})# ${HDR_PUBLIC})
-	set_target_properties(websockets PROPERTIES LINKER_LANGUAGE C)
-	list(APPEND LWS_LIBRARIES websockets)
-	target_include_directories(websockets INTERFACE
-		$<INSTALL_INTERFACE:${LWS_INSTALL_INCLUDE_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-	)
-	target_include_directories(websockets PRIVATE ${LWS_LIB_BUILD_INC_PATHS})
-	target_compile_definitions(websockets PRIVATE LWS_BUILDING_STATIC)
-	target_include_directories(websockets PUBLIC ${LWS_PUBLIC_INCLUDES})
-	set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} PARENT_SCOPE)
-	target_link_libraries(websockets PUBLIC ${LIB_LIST})
-	set_target_properties (websockets PROPERTIES
-		FOLDER third-part
-	)
 
+install(TARGETS websockets
+    CONFIGURATIONS Release
+    RUNTIME DESTINATION bin/Release
+    LIBRARY DESTINATION lib/Release
+    ARCHIVE DESTINATION lib/Release
+)
+
+install(TARGETS websockets
+    CONFIGURATIONS Debug
+    RUNTIME DESTINATION bin/Debug
+    LIBRARY DESTINATION lib/Debug
+    ARCHIVE DESTINATION lib/Debug
+)
