@@ -161,7 +161,6 @@ endif()
 
 add_subdir_include_dirs(event-libs)
 
-if (LWS_WITH_STATIC)
     if (LWS_STATIC_PIC)
         set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     endif()
@@ -178,22 +177,8 @@ if (LWS_WITH_STATIC)
 	target_compile_definitions(websockets PRIVATE LWS_BUILDING_STATIC)
 	target_include_directories(websockets PUBLIC ${LWS_PUBLIC_INCLUDES})
 	set(LWS_PUBLIC_INCLUDES ${LWS_PUBLIC_INCLUDES} PARENT_SCOPE)
-
-	if (WIN32)
-		# Windows uses the same .lib ending for static libraries and shared
-		# library linker files, so rename the static library.
-		set_target_properties(websockets
-			PROPERTIES
-			OUTPUT_NAME websockets_static)
-	endif()
-	
+	target_link_libraries(websockets PUBLIC ${LIB_LIST})
 	set_target_properties (websockets PROPERTIES
 		FOLDER third-part
 	)
-endif()
-
-# Setup the linking for all libs.
-foreach (lib ${LWS_LIBRARIES})
-	target_link_libraries(${lib} ${LIB_LIST})
-endforeach()
 
